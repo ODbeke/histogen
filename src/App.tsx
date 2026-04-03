@@ -166,7 +166,11 @@ export default function App() {
   };
 
   const verifyWithAI = async (claim: string) => {
-    const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY! });
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error("Gemini API key is not configured. Please set VITE_GEMINI_API_KEY.");
+    }
+    const ai = new GoogleGenAI({ apiKey });
     const response = await ai.models.generateContent({
       model: "gemini-3-flash-preview",
       contents: `Verify the following historical claim: "${claim}"`,
