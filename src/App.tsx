@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Scroll, Wallet, CheckCircle2, XCircle, Activity, Info, ChevronRight, Loader2, AlertCircle, Globe, Link2, Gavel, ExternalLink, X, Sun, Moon, LogOut } from 'lucide-react';
 import { ethers } from 'ethers';
-import { GoogleGenAI, Type } from "@google/genai";
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { createClient } from 'genlayer-js';
 import { studionet } from 'genlayer-js/chains';
 
@@ -36,6 +36,11 @@ const ABI = [
 ];
 
 const INITIAL_CLAIMS: Claim[] = [];
+
+const supabase = createSupabaseClient(
+  import.meta.env.VITE_SUPABASE_URL,
+  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
+);
 
 export default function App() {
   const [claimText, setClaimText] = useState('');
@@ -166,35 +171,13 @@ export default function App() {
   };
 
   const verifyWithAI = async (claim: string) => {
-    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-    if (!apiKey) {
-      throw new Error("Gemini API key is not configured. Please set VITE_GEMINI_API_KEY.");
-    }
-    const ai = new GoogleGenAI({ apiKey });
-    const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: `Verify the following historical claim: "${claim}"`,
-      config: {
-        systemInstruction: "You are a historical fact-checker for a blockchain oracle. Provide a verdict (TRUE or FALSE), a concise reasoning (max 150 chars), and a consensus percentage (e.g., '100% Match via Equivalence Principle').",
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            verdict: { type: Type.STRING, enum: ["TRUE", "FALSE"] },
-            reasoning: { type: Type.STRING },
-            consensus: { type: Type.STRING }
-          },
-          required: ["verdict", "reasoning", "consensus"]
-        }
-      }
+    const { data, error } = await supabase.functions.invoke('verify-claim', {
+      body: { claim },
     });
-
-    try {
-      return JSON.parse(response.text || "{}");
-    } catch (e) {
-      console.error("Failed to parse AI response:", e);
-      throw new Error("Invalid response from verification engine.");
+    if (error) {
+      throw new Error(error.message || "AI verification failed.");
     }
+    return data;
   };
 
   const handleVerify = async () => {
