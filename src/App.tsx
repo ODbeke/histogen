@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Scroll, Wallet, CheckCircle2, XCircle, Activity, Info, ChevronRight, Loader2, AlertCircle, Globe, Link2, Gavel, ExternalLink, X, Sun, Moon, LogOut } from 'lucide-react';
 import { ethers } from 'ethers';
-import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { createClient } from 'genlayer-js';
 import { studionet } from 'genlayer-js/chains';
 
@@ -36,11 +35,6 @@ const ABI = [
 ];
 
 const INITIAL_CLAIMS: Claim[] = [];
-
-const supabase = createSupabaseClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY
-);
 
 export default function App() {
   const [claimText, setClaimText] = useState('');
@@ -170,16 +164,6 @@ export default function App() {
     }
   };
 
-  const verifyWithAI = async (claim: string) => {
-    const { data, error } = await supabase.functions.invoke('verify-claim', {
-      body: { claim },
-    });
-    if (error) {
-      throw new Error(error.message || "AI verification failed.");
-    }
-    return data;
-  };
-
   const handleVerify = async () => {
     if (!claimText.trim()) return;
     if (!account) {
@@ -192,15 +176,16 @@ export default function App() {
     setError(null);
     
     try {
+      // Get next claim ID from local storage or start at 1
+      const savedCounter = localStorage.getItem('histo_counter') || '1';
+      let claimId = parseInt(savedCounter, 10);
+      
       // 1. Setup GenLayer Client using the official SDK
       const client = createClient({
         chain: studionet,
         provider: window.ethereum!,
         account: account as `0x${string}`,
       });
-      
-      // We first get the AI result to show in the UI immediately while the tx processes
-      const aiResult = await verifyWithAI(claimText);
       
       // 2. Submit Claim
       const submitHash = await client.writeContract({
@@ -212,13 +197,6 @@ export default function App() {
 
       // Wait for the submission to be mined
       await client.waitForTransactionReceipt({ hash: submitHash });
-      
-      // In a real app, we'd get the claim_id from logs.
-      // For this demo, we'll assume the ID is 1 for the first claim or we could fetch it.
-      // Let's try to call a view method to get the current claim ID if possible, 
-      // but the contract doesn't have a public getter for next_claim_id.
-      // We'll assume ID 1 for now or use a counter.
-      const claimId = 1; 
       
       // 3. Validate Claim with Source URL
       const validateHash = await client.writeContract({
@@ -232,15 +210,27 @@ export default function App() {
 
       setBridgeStatus('finalized');
 
+      // 4. Read Final Verdict from Contract
+      const status = await client.readContract({
+        address: CONTRACT_ADDRESS as `0x${string}`,
+        functionName: 'get_claim_status',
+        args: [claimId],
+      });
+
       const newClaim: Claim = {
-        id: Date.now().toString(),
+        id: claimId.toString(),
         text: claimText,
-        verdict: aiResult.verdict as 'TRUE' | 'FALSE',
-        consensus: aiResult.consensus || '100% Match via Equivalence Principle',
-        reasoning: aiResult.reasoning || 'Consensus reached via GenLayer studioNet.',
+        verdict: status ? 'TRUE' : 'FALSE',
+        consensus: '100% Match via Equivalence Principle',
+        reasoning: status 
+          ? 'GenLayer Intelligent Contract verified the claim against the source.' 
+          : 'GenLayer Intelligent Contract determined the claim is unsupported by the source.',
         txHash: validateHash,
         timestamp: Date.now()
       };
+      
+      // Increment counter
+      localStorage.setItem('histo_counter', (claimId + 1).toString());
       
       const updatedClaims = [newClaim, ...claims];
       setClaims(updatedClaims);
