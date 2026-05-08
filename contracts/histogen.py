@@ -1,65 +1,66 @@
 # { "Depends": "py-genlayer:test" }
+import json
 from genlayer import *
 
 class HistoricalClaimValidator(gl.Contract):
     next_claim_id: u32
     claims: TreeMap[u32, str]
     claim_verdicts: TreeMap[u32, bool]
+    claim_reasonings: TreeMap[u32, str]
 
     def __init__(self):
-        # Only initialize scalar values here! 
-        # GenVM automatically provisions the TreeMaps in the background.
         self.next_claim_id = u32(1)
 
     @gl.public.write
     def submit_claim(self, claim_text: str) -> u32:
-        """
-        Allows users to submit a historical claim.
-        Returns the unique ID (u32) for the claim.
-        """
         claim_id = self.next_claim_id
         self.claims[claim_id] = claim_text
         self.next_claim_id += u32(1)
         return claim_id
 
     @gl.public.write
-    def validate_claim(self, claim_id: u32, source_url: str) -> bool:
-        """
-        Triggers the validation process using Optimistic Democracy.
-        Returns True if the claim is correct, False otherwise.
-        """
+    def validate_claim(self, claim_id: u32) -> bool:
         claim_text = self.claims.get(claim_id, "")
         
         if not claim_text:
             return False
 
-        def verify_claim_nondet() -> bool:
-            web_data = gl.nondet.web.render(source_url, mode="html")
-            
+        def verify_claim_nondet() -> str:
             prompt = f"""
-            You are a strict historical fact-checker. Analyze the claim against the provided source text.
+            You are a strict historical fact-checker. Analyze the claim using your internal knowledge.
             
             Claim: "{claim_text}"
             
-            Source Text:
-            {web_data[:5000]}
-            
-            Task: Determine if the source text factually supports the historical claim.
-            Output a JSON object with exactly one key: "verdict". 
-            The value must be a strict boolean: true if the claim is correct according to the text, or false if it is incorrect or unsupported.
+            Task: Determine if the claim is historically accurate.
+            Output a JSON object with two keys:
+            - "verdict": true if correct, false if incorrect or unsupported.
+            - "reasoning": a very concise 1-sentence explanation.
             """
             
             response = gl.nondet.exec_prompt(prompt, response_format="json")
-            return bool(response.get("verdict", False))
+            return json.dumps({
+                "verdict": bool(response.get("verdict", False)),
+                "reasoning": str(response.get("reasoning", ""))
+            }, sort_keys=True)
 
-        consensus_verdict = gl.eq_principle.strict_eq(verify_claim_nondet)
+        consensus_result_str = gl.eq_principle.strict_eq(verify_claim_nondet)
         
-        self.claim_verdicts[claim_id] = consensus_verdict
-        return consensus_verdict
+        try:
+            result_dict = json.loads(consensus_result_str)
+            verdict = result_dict.get("verdict", False)
+            reasoning = result_dict.get("reasoning", "")
+        except:
+            verdict = False
+            reasoning = "Failed to parse consensus result."
+            
+        self.claim_verdicts[claim_id] = verdict
+        self.claim_reasonings[claim_id] = reasoning
+        return verdict
 
     @gl.public.view
     def get_claim_status(self, claim_id: u32) -> bool:
-        """
-        Deterministic, read-only method to fetch the final validated boolean outcome.
-        """
         return self.claim_verdicts.get(claim_id, False)
+
+    @gl.public.view
+    def get_claim_reasoning(self, claim_id: u32) -> str:
+        return self.claim_reasonings.get(claim_id, "")
