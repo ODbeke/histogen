@@ -241,9 +241,12 @@ export default function App() {
       // Sync local counter
       localStorage.setItem('histo_counter', (actualClaimId + 1).toString());
       
-      const updatedClaims = [newClaim, ...claims];
-      setClaims(updatedClaims);
-      localStorage.setItem('histo_claims', JSON.stringify(updatedClaims));
+      setClaims(prev => {
+        const updated = [newClaim, ...prev];
+        localStorage.setItem('histo_claims', JSON.stringify(updated));
+        return updated;
+      });
+      
       setClaimText('');
     } catch (err: any) {
       console.error("Verification error:", err);
