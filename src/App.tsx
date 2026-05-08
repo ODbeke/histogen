@@ -225,7 +225,7 @@ export default function App() {
         reasoning: status 
           ? 'GenLayer Intelligent Contract verified the claim against the source.' 
           : 'GenLayer Intelligent Contract determined the claim is unsupported by the source.',
-        txHash: validateHash,
+        txHash: submitHash,
         timestamp: Date.now()
       };
       
