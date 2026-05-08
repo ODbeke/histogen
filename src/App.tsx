@@ -202,11 +202,11 @@ export default function App() {
         interval: 2000
       });
       
-      // 3. Validate Claim with Source URL
+      // 3. Validate Claim (no source URL needed anymore, uses AI internal knowledge)
       const validateHash = await client.writeContract({
         address: CONTRACT_ADDRESS as `0x${string}`,
         functionName: 'validate_claim',
-        args: [claimId, sourceUrl],
+        args: [claimId],
         value: BigInt(0),
       });
 
@@ -225,14 +225,19 @@ export default function App() {
         args: [claimId],
       });
 
+      // 5. Read Dynamic Reasoning from Contract
+      const reasoning = await client.readContract({
+        address: CONTRACT_ADDRESS as `0x${string}`,
+        functionName: 'get_claim_reasoning',
+        args: [claimId],
+      });
+
       const newClaim: Claim = {
         id: claimId.toString(),
         text: claimText,
         verdict: status ? 'TRUE' : 'FALSE',
         consensus: '100% Match via Equivalence Principle',
-        reasoning: status 
-          ? 'GenLayer Intelligent Contract verified the claim against the source.' 
-          : 'GenLayer Intelligent Contract determined the claim is unsupported by the source.',
+        reasoning: reasoning as string,
         txHash: submitHash,
         timestamp: Date.now()
       };
