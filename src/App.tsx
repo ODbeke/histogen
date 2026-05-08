@@ -187,49 +187,34 @@ export default function App() {
         account: account as `0x${string}`,
       });
       
-      // 2. Submit Claim
-      const submitHash = await client.writeContract({
+      // 2. Submit and Validate Claim in one transaction
+      const txHash = await client.writeContract({
         address: CONTRACT_ADDRESS as `0x${string}`,
-        functionName: 'submit_claim',
+        functionName: 'submit_and_validate_claim',
         args: [claimText],
         value: BigInt(0),
       });
 
-      // Wait for the submission to be mined
-      await client.waitForTransactionReceipt({ 
-        hash: submitHash,
+      const receipt = await client.waitForTransactionReceipt({ 
+        hash: txHash,
         retries: 120,
         interval: 2000
       });
       
-      // 3. Validate Claim (no source URL needed anymore, uses AI internal knowledge)
-      const validateHash = await client.writeContract({
-        address: CONTRACT_ADDRESS as `0x${string}`,
-        functionName: 'validate_claim',
-        args: [claimId],
-        value: BigInt(0),
-      });
-
-      const validateReceipt = await client.waitForTransactionReceipt({ 
-        hash: validateHash,
-        retries: 120,
-        interval: 2000
-      });
-      
-      if (validateReceipt.status === 'reverted') {
+      if (receipt.status === 'reverted') {
         throw new Error("Transaction reverted by GenLayer validators (Consensus not reached). Please try again.");
       }
 
       setBridgeStatus('finalized');
 
-      // 4. Read Final Verdict from Contract
+      // 3. Read Final Verdict from Contract
       const status = await client.readContract({
         address: CONTRACT_ADDRESS as `0x${string}`,
         functionName: 'get_claim_status',
         args: [claimId],
       });
 
-      // 5. Read Dynamic Reasoning from Contract
+      // 4. Read Deterministic Reasoning from Contract
       const reasoning = await client.readContract({
         address: CONTRACT_ADDRESS as `0x${string}`,
         functionName: 'get_claim_reasoning',
@@ -242,7 +227,7 @@ export default function App() {
         verdict: status ? 'TRUE' : 'FALSE',
         consensus: '100% Match via Equivalence Principle',
         reasoning: reasoning as string,
-        txHash: submitHash,
+        txHash: txHash,
         timestamp: Date.now()
       };
       
