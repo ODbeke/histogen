@@ -12,53 +12,41 @@ class HistoricalClaimValidator(gl.Contract):
         self.next_claim_id = u32(1)
 
     @gl.public.write
-    def submit_claim(self, claim_text: str) -> u32:
+    def submit_and_validate_claim(self, claim_text: str) -> u32:
+        """
+        Submits and evaluates a historical claim in a single transaction.
+        Returns the unique ID for the claim.
+        """
         claim_id = self.next_claim_id
         self.claims[claim_id] = claim_text
         self.next_claim_id += u32(1)
-        return claim_id
-
-    @gl.public.write
-    def validate_claim(self, claim_id: u32) -> bool:
-        claim_text = self.claims.get(claim_id, "")
         
         if not claim_text:
-            return False
+            return claim_id
 
-        def verify_claim_nondet() -> str:
+        def verify_claim_nondet() -> bool:
             prompt = f"""
             You are a strict historical fact-checker. Analyze the claim using your internal knowledge.
             
             Claim: "{claim_text}"
             
             Task: Determine if the claim is historically accurate.
-            Output a JSON object with two keys:
-            - "verdict": true if correct, false if incorrect or unsupported.
-            - "reasoning": a very concise 1-sentence explanation.
+            Output a JSON object with exactly one key: "verdict".
+            The value must be a strict boolean: true if correct, false if incorrect or unsupported.
             """
             
             response = gl.nondet.exec_prompt(prompt, response_format="json")
-            return json.dumps({
-                "verdict": bool(response.get("verdict", False)),
-                "reasoning": str(response.get("reasoning", ""))
-            }, sort_keys=True)
+            return bool(response.get("verdict", False))
 
-        consensus_result_str = gl.eq_principle.prompt_comparative(
-            verify_claim_nondet,
-            "Both JSON objects must have exactly the same boolean 'verdict'. The 'reasoning' fields should be semantically similar."
-        )
+        # We strictly enforce consensus only on the boolean verdict
+        consensus_verdict = gl.eq_principle.strict_eq(verify_claim_nondet)
         
-        try:
-            result_dict = json.loads(consensus_result_str)
-            verdict = result_dict.get("verdict", False)
-            reasoning = result_dict.get("reasoning", "")
-        except:
-            verdict = False
-            reasoning = "Failed to parse consensus result."
+        # Set deterministic reasoning based on the robust consensus outcome
+        reasoning = "GenLayer Intelligent Contract consensus reached: The claim is historically accurate." if consensus_verdict else "GenLayer Intelligent Contract consensus reached: The claim contradicts historical records or lacks evidence."
             
-        self.claim_verdicts[claim_id] = verdict
+        self.claim_verdicts[claim_id] = consensus_verdict
         self.claim_reasonings[claim_id] = reasoning
-        return verdict
+        return claim_id
 
     @gl.public.view
     def get_claim_status(self, claim_id: u32) -> bool:
