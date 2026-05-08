@@ -207,22 +207,29 @@ export default function App() {
 
       setBridgeStatus('finalized');
 
-      // 3. Read Final Verdict from Contract
+      // 3. Get the actual Claim ID from the contract
+      const count = await client.readContract({
+        address: CONTRACT_ADDRESS as `0x${string}`,
+        functionName: 'get_claim_count',
+      });
+      const actualClaimId = Number(count);
+
+      // 4. Read Final Verdict from Contract
       const status = await client.readContract({
         address: CONTRACT_ADDRESS as `0x${string}`,
         functionName: 'get_claim_status',
-        args: [claimId],
+        args: [actualClaimId],
       });
 
-      // 4. Read Deterministic Reasoning from Contract
+      // 5. Read Deterministic Reasoning from Contract
       const reasoning = await client.readContract({
         address: CONTRACT_ADDRESS as `0x${string}`,
         functionName: 'get_claim_reasoning',
-        args: [claimId],
+        args: [actualClaimId],
       });
 
       const newClaim: Claim = {
-        id: claimId.toString(),
+        id: actualClaimId.toString(),
         text: claimText,
         verdict: status ? 'TRUE' : 'FALSE',
         consensus: '100% Match via Equivalence Principle',
@@ -231,8 +238,8 @@ export default function App() {
         timestamp: Date.now()
       };
       
-      // Increment counter
-      localStorage.setItem('histo_counter', (claimId + 1).toString());
+      // Sync local counter
+      localStorage.setItem('histo_counter', (actualClaimId + 1).toString());
       
       const updatedClaims = [newClaim, ...claims];
       setClaims(updatedClaims);
