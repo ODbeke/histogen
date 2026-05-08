@@ -210,11 +210,15 @@ export default function App() {
         value: BigInt(0),
       });
 
-      await client.waitForTransactionReceipt({ 
+      const validateReceipt = await client.waitForTransactionReceipt({ 
         hash: validateHash,
         retries: 120,
         interval: 2000
       });
+      
+      if (validateReceipt.status === 'reverted') {
+        throw new Error("Transaction reverted by GenLayer validators (Consensus not reached). Please try again.");
+      }
 
       setBridgeStatus('finalized');
 

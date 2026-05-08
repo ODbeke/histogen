@@ -43,7 +43,10 @@ class HistoricalClaimValidator(gl.Contract):
                 "reasoning": str(response.get("reasoning", ""))
             }, sort_keys=True)
 
-        consensus_result_str = gl.eq_principle.strict_eq(verify_claim_nondet)
+        consensus_result_str = gl.eq_principle.prompt_comparative(
+            verify_claim_nondet,
+            "Both JSON objects must have exactly the same boolean 'verdict'. The 'reasoning' fields should be semantically similar."
+        )
         
         try:
             result_dict = json.loads(consensus_result_str)
