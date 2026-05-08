@@ -196,7 +196,11 @@ export default function App() {
       });
 
       // Wait for the submission to be mined
-      await client.waitForTransactionReceipt({ hash: submitHash });
+      await client.waitForTransactionReceipt({ 
+        hash: submitHash,
+        retries: 120,
+        interval: 2000
+      });
       
       // 3. Validate Claim with Source URL
       const validateHash = await client.writeContract({
@@ -206,7 +210,11 @@ export default function App() {
         value: BigInt(0),
       });
 
-      await client.waitForTransactionReceipt({ hash: validateHash });
+      await client.waitForTransactionReceipt({ 
+        hash: validateHash,
+        retries: 120,
+        interval: 2000
+      });
 
       setBridgeStatus('finalized');
 
