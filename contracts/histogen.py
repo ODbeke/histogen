@@ -49,8 +49,8 @@ class HistoricalClaimValidator(gl.Contract):
         return claim_id
 
     @gl.public.view
-    def get_claim_count(self) -> u32:
-        return self.next_claim_id - u32(1)
+    def get_claim_count(self) -> int:
+        return int(self.next_claim_id) - 1
 
     @gl.public.view
     def get_claim_status(self, claim_id: u32) -> bool:

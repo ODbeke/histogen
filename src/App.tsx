@@ -21,7 +21,7 @@ interface Claim {
   timestamp: number;
 }
 
-const CONTRACT_ADDRESS = '0x8033840e9AFc852eC742acAae3878b735617aaae';
+const CONTRACT_ADDRESS = '0xd5752B9d2e05032f72E38c9fc6ddC8E06718AC09';
 const EXPLORER_URL = 'https://explorer-studio.genlayer.com';
 const CHAIN_ID = '61999'; // 0xF22F
 const RPC_URL = 'https://studio.genlayer.com/api';
