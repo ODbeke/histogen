@@ -28,11 +28,7 @@ const RPC_URL = 'https://studio.genlayer.com/api';
 const NETWORK_NAME = 'GenLayer StudioNet';
 const CURRENCY_SYMBOL = 'GEN';
 
-const ABI = [
-  "function submit_claim(string claim_text) public returns (uint32)",
-  "function validate_claim(uint32 claim_id, string source_url) public returns (bool)",
-  "function get_claim_status(uint32 claim_id) public view returns (bool)"
-];
+
 
 const INITIAL_CLAIMS: Claim[] = [];
 
@@ -211,6 +207,7 @@ export default function App() {
       const count = await client.readContract({
         address: CONTRACT_ADDRESS as `0x${string}`,
         functionName: 'get_claim_count',
+        args: [],
       });
       const actualClaimId = Number(count);
 
