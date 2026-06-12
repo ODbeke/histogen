@@ -25,6 +25,11 @@ HistoGen is powered by the **GenLayer Execution Stack**, utilizing its unique AI
 * **The Equivalence Principle:** Because independent AI models will explain their findings using different words, HistoGen relies on semantic matching. The network compares the underlying meaning of the AI-generated reasoning rather than looking for exact string matches. If the core historical facts align, a binding consensus is finalized on-chain.
 ___
 
+## Live Deployment
+HistoGen is deployed and running live on the GenLayer StudioNet:
+* **Intelligent Contract Address:** `0x78fBC266A81c31132C58D08C72dD6E24a2d6723F`
+___
+
 ## How It Works
 1. **Submit a Claim:** A user submits a subjective historical claim to the HistoGen Intelligent Contract (e.g., *"The Library of Alexandria was destroyed by a single fire in 48 BC."*).
 2. **AI Jury Deployed:** The GenLayer network assigns a decentralized panel of LLM validators to the case.
