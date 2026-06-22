@@ -390,13 +390,13 @@ export default function App() {
                   {bridgeStatus === 'relaying' ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
                   <span>
                     {bridgeStatus === 'relaying' 
-                      ? 'Relaying consensus to studioNet via GenLayer Bridge...' 
-                      : 'State finalized on-chain. Bridge callback successful.'}
+                      ? 'Decentralized AI nodes executing consensus on studioNet...' 
+                      : 'Consensus finalized. On-chain state updated successfully!'}
                   </span>
                 </div>
                 <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest opacity-60">
-                  <Link2 size={12} />
-                  GenLayer Bridge Service
+                  <Activity size={12} className="animate-pulse text-emerald-500" />
+                  GenLayer Consensus Stack
                 </div>
               </div>
             </motion.div>
