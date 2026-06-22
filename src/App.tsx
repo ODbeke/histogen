@@ -594,7 +594,7 @@ export default function App() {
                 </thead>
                 <tbody className="divide-y divide-teal-deep/5 dark:divide-white/5">
                   <AnimatePresence mode="popLayout">
-                    {claims.map((claim) => (
+                    {claims.slice(0, 8).map((claim) => (
                       <motion.tr
                         key={claim.id}
                         initial={{ opacity: 0, x: -20 }}
