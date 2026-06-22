@@ -587,7 +587,6 @@ export default function App() {
                   <tr className="border-b border-teal-deep/5 dark:border-white/5 bg-teal-deep/[0.02] dark:bg-white/[0.02]">
                     <th className="px-8 py-5 text-sm font-semibold uppercase tracking-wider text-teal-deep/60 dark:text-dark-teal/60">Claim</th>
                     <th className="px-8 py-5 text-sm font-semibold uppercase tracking-wider text-teal-deep/60 dark:text-dark-teal/60">Verdict</th>
-                    <th className="px-8 py-5 text-sm font-semibold uppercase tracking-wider text-teal-deep/60 dark:text-dark-teal/60">Consensus</th>
                     <th className="px-8 py-5 text-sm font-semibold uppercase tracking-wider text-teal-deep/60 dark:text-dark-teal/60">AI Reasoning</th>
                     <th className="px-8 py-5 text-sm font-semibold uppercase tracking-wider text-teal-deep/60 dark:text-dark-teal/60">Bridge TX</th>
                   </tr>
@@ -615,12 +614,6 @@ export default function App() {
                             {claim.verdict === 'TRUE' ? <CheckCircle2 size={12} /> : <XCircle size={12} />}
                             {claim.verdict}
                           </span>
-                        </td>
-                        <td className="px-8 py-6">
-                          <div className="flex items-center gap-2 text-sm text-teal-deep/70 dark:text-dark-teal/70">
-                            <Info size={14} className="text-gold-antique dark:text-dark-gold" />
-                            {claim.consensus}
-                          </div>
                         </td>
                         <td className="px-8 py-6">
                           <div className="flex items-center justify-between gap-4">
