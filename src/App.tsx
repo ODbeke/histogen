@@ -439,7 +439,7 @@ export default function App() {
                     value={sourceUrl}
                     onChange={(e) => setSourceUrl(e.target.value)}
                     disabled={!account || isVerifying}
-                    placeholder={account ? "e.g., https://en.wikipedia.org/wiki/Library_of_Alexandria (Optional Reference Source URL)" : "Connect wallet to start validating..."}
+                    placeholder={account ? "Optional Reference Source URL (e.g., https://en.wikipedia.org/wiki/Library_of_Alexandria)" : "Optional: Connect wallet to enter reference URL..."}
                     className="w-full rounded-xl border border-teal-deep/10 dark:border-white/10 bg-paper/50 dark:bg-dark-bg/50 px-6 py-3 text-sm placeholder:text-teal-deep/30 dark:placeholder:text-dark-teal/30 text-teal-deep dark:text-slate-200 focus:border-teal-deep/30 dark:focus:border-dark-teal/30 focus:bg-white dark:focus:bg-dark-bg focus:outline-none focus:ring-0 transition-all disabled:opacity-50"
                   />
                 </div>

@@ -36,10 +36,12 @@ describe("HistoGen App Component", () => {
     // Check for the Connect Wallet button
     expect(screen.getByText("Connect Wallet")).toBeInTheDocument();
     
-    // Textarea and input should have the connect wallet placeholder
-    const elements = screen.getAllByPlaceholderText("Connect wallet to start validating...");
-    expect(elements.length).toBe(2);
-    expect(elements[0]).toBeDisabled();
-    expect(elements[1]).toBeDisabled();
+    // Textarea should have the connect wallet placeholder
+    const textarea = screen.getByPlaceholderText("Connect wallet to start validating...");
+    expect(textarea).toBeDisabled();
+
+    // Input should have the optional placeholder
+    const input = screen.getByPlaceholderText("Optional: Connect wallet to enter reference URL...");
+    expect(input).toBeDisabled();
   });
 });
