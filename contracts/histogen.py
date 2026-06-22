@@ -2,6 +2,18 @@
 import json
 from genlayer import *
 
+def _parse_llm_json(raw) -> dict:
+    if isinstance(raw, dict):
+        return raw
+    try:
+        s = str(raw).strip().replace("```json", "").replace("```", "").strip()
+        start, end = s.find("{"), s.rfind("}") + 1
+        if start >= 0 and end > start:
+            s = s[start:end]
+        return json.loads(s)
+    except Exception:
+        return {}
+
 class HistoricalClaimValidator(gl.Contract):
     next_claim_id: u32
     claims: TreeMap[u32, str]
@@ -12,10 +24,10 @@ class HistoricalClaimValidator(gl.Contract):
         self.next_claim_id = u32(1)
 
     @gl.public.write
-    def submit_and_validate_claim(self, claim_text: str) -> u32:
+    def submit_and_validate_claim(self, claim_text: str, source_url: str = "") -> u32:
         """
-        Submits and evaluates a historical claim in a single transaction.
-        Returns the unique ID for the claim.
+        Submits and evaluates a historical claim on-chain.
+        Can optionally fetch reference context from a source_url.
         """
         claim_id = self.next_claim_id
         self.claims[claim_id] = claim_text
@@ -24,27 +36,74 @@ class HistoricalClaimValidator(gl.Contract):
         if not claim_text:
             return claim_id
 
-        def verify_claim_nondet() -> bool:
+        def leader_fn() -> str:
+            # Check if we have a source URL to fetch context
+            context = ""
+            if source_url and source_url.strip():
+                try:
+                    context = gl.nondet.web.render(source_url.strip(), mode="text")
+                    context = f"\n\nReference Source Content from {source_url}:\n{context[:4000]}\n"
+                except Exception as e:
+                    context = f"\n\n(Note: Failed to fetch source URL: {str(e)})\n"
+
             prompt = f"""
-            You are a strict historical fact-checker. Analyze the claim using your internal knowledge.
+            You are a strict historical fact-checker. Analyze the claim using your internal knowledge and the provided reference source content if present.
             
             Claim: "{claim_text}"
-            
+            {context}
             Task: Determine if the claim is historically accurate.
-            Output a JSON object with exactly one key: "verdict".
-            The value must be a strict boolean: true if correct, false if incorrect or unsupported.
+            Output a JSON object with exactly two keys:
+            - "verdict": a strict boolean: true if correct, false if incorrect or unsupported.
+            - "reasoning": a brief 1-sentence explanation of why it is correct or incorrect.
             """
             
-            response = gl.nondet.exec_prompt(prompt, response_format="json")
-            return bool(response.get("verdict", False))
+            try:
+                response = gl.nondet.exec_prompt(prompt, response_format="json")
+                parsed = _parse_llm_json(response)
+                verdict = bool(parsed.get("verdict", False))
+                reasoning = str(parsed.get("reasoning", ""))
+            except Exception as e:
+                verdict = False
+                reasoning = f"Validation encountered an error: {str(e)}"
+                
+            return json.dumps({"verdict": verdict, "reasoning": reasoning})
 
-        # We strictly enforce consensus only on the boolean verdict
-        consensus_verdict = gl.eq_principle.strict_eq(verify_claim_nondet)
-        
-        # Set deterministic reasoning based on the robust consensus outcome
-        reasoning = "GenLayer Intelligent Contract consensus reached: The claim is historically accurate." if consensus_verdict else "GenLayer Intelligent Contract consensus reached: The claim contradicts historical records or lacks evidence."
+        def validator_fn(leader_result) -> bool:
+            if not isinstance(leader_result, gl.vm.Return):
+                return False
             
-        self.claim_verdicts[claim_id] = consensus_verdict
+            leader_str = leader_result.calldata
+            if not isinstance(leader_str, str):
+                return False
+            
+            try:
+                leader_data = json.loads(leader_str)
+            except Exception:
+                return False
+                
+            if "verdict" not in leader_data or "reasoning" not in leader_data:
+                return False
+            
+            # Independent verification of the verdict
+            try:
+                own_data = json.loads(leader_fn())
+            except Exception:
+                return False
+                
+            return own_data.get("verdict") == leader_data.get("verdict")
+
+        # Run non-deterministic consensus using custom validation
+        raw_consensus = gl.vm.run_nondet_unsafe(leader_fn, validator_fn)
+        
+        try:
+            consensus_data = json.loads(raw_consensus)
+            verdict = bool(consensus_data.get("verdict", False))
+            reasoning = str(consensus_data.get("reasoning", "Consensus completed successfully."))
+        except Exception:
+            verdict = False
+            reasoning = "Failed to parse consensus results."
+
+        self.claim_verdicts[claim_id] = verdict
         self.claim_reasonings[claim_id] = reasoning
         return claim_id
 

@@ -34,7 +34,7 @@ const INITIAL_CLAIMS: Claim[] = [];
 
 export default function App() {
   const [claimText, setClaimText] = useState('');
-  const [sourceUrl, setSourceUrl] = useState('https://en.wikipedia.org/wiki/Library_of_Alexandria');
+  const [sourceUrl, setSourceUrl] = useState('');
   const [claims, setClaims] = useState<Claim[]>(INITIAL_CLAIMS);
   const [isVerifying, setIsVerifying] = useState(false);
   const [account, setAccount] = useState<string | null>(null);
@@ -187,7 +187,7 @@ export default function App() {
       const txHash = await client.writeContract({
         address: CONTRACT_ADDRESS as `0x${string}`,
         functionName: 'submit_and_validate_claim',
-        args: [claimText],
+        args: [claimText, sourceUrl],
         value: BigInt(0),
       });
 
@@ -430,6 +430,17 @@ export default function App() {
                     disabled={!account || isVerifying}
                     placeholder={account ? "e.g., The Library of Alexandria was destroyed by a single fire in 48 BC." : "Connect wallet to start validating..."}
                     className="h-48 w-full resize-none rounded-2xl border border-teal-deep/10 dark:border-white/10 bg-paper/50 dark:bg-dark-bg/50 p-6 text-lg placeholder:text-teal-deep/30 dark:placeholder:text-dark-teal/30 text-teal-deep dark:text-slate-200 focus:border-teal-deep/30 dark:focus:border-dark-teal/30 focus:bg-white dark:focus:bg-dark-bg focus:outline-none focus:ring-0 transition-all disabled:opacity-50"
+                  />
+                </div>
+                
+                <div className="relative">
+                  <input
+                    type="url"
+                    value={sourceUrl}
+                    onChange={(e) => setSourceUrl(e.target.value)}
+                    disabled={!account || isVerifying}
+                    placeholder={account ? "e.g., https://en.wikipedia.org/wiki/Library_of_Alexandria (Optional Reference Source URL)" : "Connect wallet to start validating..."}
+                    className="w-full rounded-xl border border-teal-deep/10 dark:border-white/10 bg-paper/50 dark:bg-dark-bg/50 px-6 py-3 text-sm placeholder:text-teal-deep/30 dark:placeholder:text-dark-teal/30 text-teal-deep dark:text-slate-200 focus:border-teal-deep/30 dark:focus:border-dark-teal/30 focus:bg-white dark:focus:bg-dark-bg focus:outline-none focus:ring-0 transition-all disabled:opacity-50"
                   />
                 </div>
                 
