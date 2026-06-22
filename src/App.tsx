@@ -497,10 +497,10 @@ export default function App() {
               
               <div className="relative space-y-12 before:absolute before:left-[11px] before:top-2 before:h-[calc(100%-16px)] before:w-0.5 before:bg-teal-deep/5 dark:before:bg-white/5">
                 {[
-                  { title: 'Leader LLM', desc: 'Validators choose and optimize LLMs for initial truth value.', status: isVerifying ? 'active' : 'idle' },
-                  { title: 'Equivalence Check', desc: 'Cross-references semantic meaning across decentralized validator nodes.', status: isVerifying ? 'pending' : 'idle' },
-                  { title: 'Bridge Relay', desc: 'Pushing results to studioNet via GenLayer Bridge.', status: bridgeStatus === 'relaying' ? 'active' : 'idle' },
-                  { title: 'Finality', desc: 'State updated onchain in the Internet Court.', status: bridgeStatus === 'finalized' ? 'active' : 'idle' }
+                  { title: 'Leader Execution', desc: 'A selected leader node executes the non-deterministic block and proposes the state change.', status: isVerifying ? 'active' : 'idle' },
+                  { title: 'Validator Adjudication', desc: 'Decentralized validator nodes independently verify the proposed state change.', status: isVerifying ? 'pending' : 'idle' },
+                  { title: 'Equivalence Consensus', desc: 'The network reaches consensus by comparing validator outputs using the Equivalence Principle.', status: bridgeStatus === 'relaying' ? 'active' : 'idle' },
+                  { title: 'Onchain Finality', desc: 'The state transition is committed to the block, updating the contract storage.', status: bridgeStatus === 'finalized' ? 'active' : 'idle' }
                 ].map((step, idx) => (
                   <div key={idx} className="relative flex gap-6 pl-1">
                     <div className={`z-10 mt-1 h-5 w-5 rounded-full border-2 bg-white dark:bg-dark-paper transition-colors duration-500 ${
