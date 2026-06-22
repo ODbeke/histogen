@@ -41,8 +41,9 @@ export default function App() {
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [bridgeStatus, setBridgeStatus] = useState<'idle' | 'relaying' | 'finalized'>('idle');
-  const [selectedClaim, setSelectedClaim] = useState<Claim | null>(null);
+  const [selectedClaim, setSelectedClaim] = useState<Claim[] | Claim | null>(null);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [activeStep, setActiveStep] = useState<number>(0);
 
   useEffect(() => {
     const savedTheme = localStorage.getItem('theme');
@@ -170,6 +171,11 @@ export default function App() {
     setIsVerifying(true);
     setBridgeStatus('relaying');
     setError(null);
+    setActiveStep(1); // 1. Leader Execution starts
+
+    // Set progression timeouts for a realistic, smooth sequence
+    const t1 = setTimeout(() => setActiveStep(2), 2000);   // Step 2: Validator Adjudication at 2s
+    const t2 = setTimeout(() => setActiveStep(3), 6000);   // Step 3: Equivalence Consensus at 6s
     
     try {
       // Get next claim ID from local storage or start at 1
@@ -201,7 +207,12 @@ export default function App() {
         throw new Error("Transaction reverted by GenLayer validators (Consensus not reached). Please try again.");
       }
 
+      // Clear timeouts on success
+      clearTimeout(t1);
+      clearTimeout(t2);
+      
       setBridgeStatus('finalized');
+      setActiveStep(4); // 4. Finality reached!
 
       // 3. Get the actual Claim ID from the contract
       const count = await client.readContract({
@@ -248,9 +259,16 @@ export default function App() {
     } catch (err: any) {
       console.error("Verification error:", err);
       setError(err.message || "Verification failed. Ensure you are on GenLayer studioNet.");
+      // Reset step visualizer on error
+      clearTimeout(t1);
+      clearTimeout(t2);
+      setActiveStep(0);
     } finally {
       setIsVerifying(false);
-      setTimeout(() => setBridgeStatus('idle'), 3000);
+      setTimeout(() => {
+        setBridgeStatus('idle');
+        setActiveStep(0); // Reset visualizer back to idle after status banner goes away
+      }, 4000);
     }
   };
 
@@ -497,25 +515,40 @@ export default function App() {
               
               <div className="relative space-y-12 before:absolute before:left-[11px] before:top-2 before:h-[calc(100%-16px)] before:w-0.5 before:bg-teal-deep/5 dark:before:bg-white/5">
                 {[
-                  { title: 'Leader Execution', desc: 'A selected leader node executes the non-deterministic block and proposes the state change.', status: isVerifying ? 'active' : 'idle' },
-                  { title: 'Validator Adjudication', desc: 'Decentralized validator nodes independently verify the proposed state change.', status: isVerifying ? 'pending' : 'idle' },
-                  { title: 'Equivalence Consensus', desc: 'The network reaches consensus by comparing validator outputs using the Equivalence Principle.', status: bridgeStatus === 'relaying' ? 'active' : 'idle' },
-                  { title: 'Onchain Finality', desc: 'The state transition is committed to the block, updating the contract storage.', status: bridgeStatus === 'finalized' ? 'active' : 'idle' }
-                ].map((step, idx) => (
-                  <div key={idx} className="relative flex gap-6 pl-1">
-                    <div className={`z-10 mt-1 h-5 w-5 rounded-full border-2 bg-white dark:bg-dark-paper transition-colors duration-500 ${
-                      step.status === 'active' ? 'border-gold-antique dark:border-dark-gold' : 
-                      step.status === 'pending' ? 'border-teal-deep/40 dark:border-dark-teal/40 border-dashed animate-spin' :
-                      'border-teal-deep/20 dark:border-white/20'
-                    }`}>
-                      {step.status === 'active' && <div className="m-0.5 h-3 w-3 animate-pulse rounded-full bg-gold-antique dark:bg-dark-gold" />}
+                  { title: 'Leader Execution', desc: 'A selected leader node executes the non-deterministic block and proposes the state change.' },
+                  { title: 'Validator Adjudication', desc: 'Decentralized validator nodes independently verify the proposed state change.' },
+                  { title: 'Equivalence Consensus', desc: 'The network reaches consensus by comparing validator outputs using the Equivalence Principle.' },
+                  { title: 'Onchain Finality', desc: 'The state transition is committed to the block, updating the contract storage.' }
+                ].map((step, idx) => {
+                  const stepIdx = idx + 1;
+                  let status = 'idle';
+                  if (activeStep === 4) {
+                    status = 'completed';
+                  } else if (activeStep === stepIdx) {
+                    status = 'active';
+                  } else if (activeStep > stepIdx) {
+                    status = 'completed';
+                  }
+
+                  return (
+                    <div key={idx} className="relative flex gap-6 pl-1">
+                      {status === 'completed' ? (
+                        <CheckCircle2 size={20} className="z-10 mt-1 text-emerald-500 dark:text-emerald-400 bg-white dark:bg-dark-paper rounded-full shrink-0" />
+                      ) : (
+                        <div className={`z-10 mt-1 h-5 w-5 rounded-full border-2 bg-white dark:bg-dark-paper transition-colors duration-500 shrink-0 ${
+                          status === 'active' ? 'border-gold-antique dark:border-dark-gold' : 
+                          'border-teal-deep/20 dark:border-white/20'
+                        }`}>
+                          {status === 'active' && <div className="m-0.5 h-3 w-3 animate-pulse rounded-full bg-gold-antique dark:bg-dark-gold" />}
+                        </div>
+                      )}
+                      <div>
+                        <h4 className="font-semibold text-teal-deep dark:text-dark-teal">{step.title}</h4>
+                        <p className="mt-1 text-sm text-teal-deep/60 dark:text-slate-400 leading-relaxed">{step.desc}</p>
+                      </div>
                     </div>
-                    <div>
-                      <h4 className="font-semibold text-teal-deep dark:text-dark-teal">{step.title}</h4>
-                      <p className="mt-1 text-sm text-teal-deep/60 dark:text-slate-400 leading-relaxed">{step.desc}</p>
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </motion.div>
