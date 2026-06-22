@@ -390,8 +390,8 @@ export default function App() {
                   {bridgeStatus === 'relaying' ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle2 size={16} />}
                   <span>
                     {bridgeStatus === 'relaying' 
-                      ? 'Decentralized AI nodes executing consensus on studioNet...' 
-                      : 'Consensus finalized. On-chain state updated successfully!'}
+                      ? 'Decentralized AI nodes executing consensus.' 
+                      : 'Consensus finalized. Onchain state updated successfully!'}
                   </span>
                 </div>
                 <div className="flex items-center gap-2 text-[10px] uppercase tracking-widest opacity-60">
@@ -500,7 +500,7 @@ export default function App() {
                   { title: 'Leader LLM', desc: 'Validators choose and optimize LLMs for initial truth value.', status: isVerifying ? 'active' : 'idle' },
                   { title: 'Equivalence Check', desc: 'Cross-references semantic meaning across decentralized validator nodes.', status: isVerifying ? 'pending' : 'idle' },
                   { title: 'Bridge Relay', desc: 'Pushing results to studioNet via GenLayer Bridge.', status: bridgeStatus === 'relaying' ? 'active' : 'idle' },
-                  { title: 'Finality', desc: 'State updated on-chain in the Internet Court.', status: bridgeStatus === 'finalized' ? 'active' : 'idle' }
+                  { title: 'Finality', desc: 'State updated onchain in the Internet Court.', status: bridgeStatus === 'finalized' ? 'active' : 'idle' }
                 ].map((step, idx) => (
                   <div key={idx} className="relative flex gap-6 pl-1">
                     <div className={`z-10 mt-1 h-5 w-5 rounded-full border-2 bg-white dark:bg-dark-paper transition-colors duration-500 ${
@@ -720,7 +720,7 @@ export default function App() {
                 </li>
                 <li className="flex gap-2">
                   <span className="text-gold-antique dark:text-dark-gold font-bold">•</span>
-                  <span><strong className="text-teal-deep dark:text-dark-teal">Equivalence Principle:</strong> Because independent AIs explain findings differently, the network compares their semantic meaning instead of exact words. If the core historical facts match, a binding consensus is finalized on-chain.</span>
+                  <span><strong className="text-teal-deep dark:text-dark-teal">Equivalence Principle:</strong> Because independent AIs explain findings differently, the network compares their semantic meaning instead of exact words. If the core historical facts match, a binding consensus is finalized onchain.</span>
                 </li>
               </ul>
             </div>
@@ -740,7 +740,7 @@ export default function App() {
               <p>HistoGen’s mission is to build a decentralized, unbiased ledger of human history. Since historical records are inherently subjective and non-deterministic, traditional smart contracts cannot process them. We are building on GenLayer to solve this.</p>
               <p>Through Intelligent Contracts, we empower AI to analyze natural language and conflicting historical accounts.</p>
               <p>Truth should never be dictated by one entity. Using Optimistic Democracy, a decentralized jury of varied AI validators independently evaluates claims and votes to reach consensus.</p>
-              <p>By applying the Equivalence Principle, the network matches the semantic meaning of these AI findings, ignoring exact phrasing to forge a mathematically verifiable, on-chain historical truth.</p>
+              <p>By applying the Equivalence Principle, the network matches the semantic meaning of these AI findings, ignoring exact phrasing to forge a mathematically verifiable, onchain historical truth.</p>
             </div>
           </motion.div>
         </section>

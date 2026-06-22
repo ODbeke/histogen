@@ -14,7 +14,7 @@ HistoGen is a decentralized Web3 application designed to bridge the gap between 
 ___
 
 ## The Mission
-Truth should never be dictated by a single entity. HistoGen’s mission is to build an unbiased historical ledger by empowering decentralized AI to analyze natural language and conflicting historical accounts. Through cryptographic consensus and AI-driven validation, we ensure that historical truths are rigorously debated and verified on-chain.
+Truth should never be dictated by a single entity. HistoGen’s mission is to build an unbiased historical ledger by empowering decentralized AI to analyze natural language and conflicting historical accounts. Through cryptographic consensus and AI-driven validation, we ensure that historical truths are rigorously debated and verified onchain.
 ___
 
 ## The Technology Stack
@@ -22,7 +22,7 @@ HistoGen is powered by the **GenLayer Execution Stack**, utilizing its unique AI
 
 * **Intelligent Contracts:** Unlike traditional smart contracts that only read rigid code and binary inputs, our contracts process natural language. This allows them to interpret complex historical claims, parse context, and deploy AI validators.
 * **Optimistic Democracy:** When a claim is submitted, it is assigned to a decentralized jury of independent validator nodes, each running a different Large Language Model (LLM). These AI validators independently research the history and vote, ensuring no single AI model can hallucinate or dictate the truth.
-* **The Equivalence Principle:** Because independent AI models will explain their findings using different words, HistoGen relies on semantic matching. The network compares the underlying meaning of the AI-generated reasoning rather than looking for exact string matches. If the core historical facts align, a binding consensus is finalized on-chain.
+* **The Equivalence Principle:** Because independent AI models will explain their findings using different words, HistoGen relies on semantic matching. The network compares the underlying meaning of the AI-generated reasoning rather than looking for exact string matches. If the core historical facts align, a binding consensus is finalized onchain.
 ___
 
 ## Live Deployment
@@ -34,7 +34,7 @@ ___
 1. **Submit a Claim:** A user submits a subjective historical claim to the HistoGen Intelligent Contract (e.g., *"The Library of Alexandria was destroyed by a single fire in 48 BC."*).
 2. **AI Jury Deployed:** The GenLayer network assigns a decentralized panel of LLM validators to the case.
 3. **Independent Evaluation:** Each AI node fetches historical data, cross-references sources, and formulates a reasoned verdict.
-4. **Consensus & Resolution:** The network applies the Equivalence Principle to match the semantic reasoning of the nodes. Once Optimistic Democracy consensus is reached, the final verdict (e.g., *False - The destruction was a series of events over centuries*) is recorded on-chain.
+4. **Consensus & Resolution:** The network applies the Equivalence Principle to match the semantic reasoning of the nodes. Once Optimistic Democracy consensus is reached, the final verdict (e.g., *False - The destruction was a series of events over centuries*) is recorded onchain.
 ___
 ## 💻 Getting Started
 *(Instructions for developers to run HistoGen locally)*

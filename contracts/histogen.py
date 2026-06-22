@@ -26,7 +26,7 @@ class HistoricalClaimValidator(gl.Contract):
     @gl.public.write
     def submit_and_validate_claim(self, claim_text: str, source_url: str = "") -> u32:
         """
-        Submits and evaluates a historical claim on-chain.
+        Submits and evaluates a historical claim onchain.
         Can optionally fetch reference context from a source_url.
         """
         claim_id = self.next_claim_id
