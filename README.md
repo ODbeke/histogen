@@ -27,7 +27,7 @@ ___
 
 ## Live Deployment
 HistoGen is deployed and running live on the GenLayer StudioNet:
-* **Intelligent Contract Address:** `0x78fBC266A81c31132C58D08C72dD6E24a2d6723F`
+* **Intelligent Contract Address:** `0xAa4DcaBe8aFc4def1Db5350D975bFa6a8b453901`
 ___
 
 ## How It Works
