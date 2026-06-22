@@ -258,7 +258,12 @@ export default function App() {
       setClaimText('');
     } catch (err: any) {
       console.error("Verification error:", err);
-      setError(err.message || "Verification failed. Ensure you are on GenLayer studioNet.");
+      const errMsg = err.message || "";
+      if (errMsg.includes("User rejected the request") || errMsg.includes("User denied transaction signature")) {
+        setError("Transaction signature request declined in MetaMask. Please try again.");
+      } else {
+        setError(errMsg || "Verification failed. Ensure you are on GenLayer studioNet.");
+      }
       // Reset step visualizer on error
       clearTimeout(t1);
       clearTimeout(t2);
@@ -301,12 +306,7 @@ export default function App() {
               {isDarkMode ? <Sun size={18} /> : <Moon size={18} />}
             </button>
             
-            {error && (
-              <div className="hidden md:flex items-center gap-2 text-xs text-rose-600 bg-rose-50 px-3 py-1.5 rounded-lg border border-rose-100">
-                <AlertCircle size={14} />
-                {error}
-              </div>
-            )}
+            
             
             {account ? (
               <div className="flex items-center gap-2">
@@ -461,6 +461,23 @@ export default function App() {
                     className="w-full rounded-xl border border-teal-deep/10 dark:border-white/10 bg-paper/50 dark:bg-dark-bg/50 px-6 py-3 text-sm placeholder:text-teal-deep/30 dark:placeholder:text-dark-teal/30 text-teal-deep dark:text-slate-200 focus:border-teal-deep/30 dark:focus:border-dark-teal/30 focus:bg-white dark:focus:bg-dark-bg focus:outline-none focus:ring-0 transition-all disabled:opacity-50"
                   />
                 </div>
+                
+                <AnimatePresence>
+                  {error && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="flex items-start gap-2.5 rounded-xl border border-rose-500/20 bg-rose-500/5 p-4 text-sm text-rose-600 dark:text-rose-400"
+                    >
+                      <AlertCircle size={18} className="shrink-0 mt-0.5" />
+                      <div>
+                        <h4 className="font-bold">Transaction Failed</h4>
+                        <p className="mt-0.5 text-xs text-rose-600/80 dark:text-rose-400/80">{error}</p>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
                 
                 <div className="flex flex-wrap items-center gap-4">
                   <button
